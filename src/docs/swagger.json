@@ -1,0 +1,321 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "API de Adoção de Pets",
+    "version": "1.0.0",
+    "description": "API REST para gerenciamento de pets disponíveis para adoção"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3000/api",
+      "description": "Servidor Local de Desenvolvimento"
+    }
+  ],
+  "paths": {
+    "/pets": {
+      "get": {
+        "summary": "Listar todos os pets",
+        "description": "Retorna todos os pets cadastrados na plataforma.",
+        "tags": ["Pets"],
+        "responses": {
+          "200": {
+            "description": "Lista de pets retornada com sucesso",
+            "content": {
+              "application/json": {
+                "example": [
+                  {
+                    "id": 1,
+                    "nome": "Rex",
+                    "especie": "Cachorro",
+                    "idade": 3,
+                    "adotado": false,
+                    "createdAt": "2026-10-01T14:00:00.000Z",
+                    "updatedAt": "2026-10-01T14:00:00.000Z"
+                  }
+                ]
+              }
+            }
+          },
+          "500": {
+            "description": "Erro interno ao listar pets"
+          }
+        }
+      },
+
+      "post": {
+        "summary": "Cadastrar novo pet",
+        "description": "Cadastra um novo pet para disponibiliza-lo na plataforma de adocao.",
+        "tags": ["Pets"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePetDTO"
+              },
+              "example": {
+                "nome": "Rex",
+                "especie": "Cachorro",
+                "idade": 3,
+                "adotado": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Pet criado com sucesso",
+            "content": {
+              "application/json": {
+                "example": {
+                  "id": 1,
+                  "nome": "Rex",
+                  "especie": "Cachorro",
+                  "idade": 3,
+                  "adotado": false,
+                  "createdAt": "2026-10-01T14:00:00.000Z",
+                  "updatedAt": "2026-10-01T14:00:00.000Z"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Dados invalidos ou campos obrigatorios ausentes"
+          },
+          "500": {
+            "description": "Erro interno ao cadastrar pet"
+          }
+        }
+      }
+    },
+
+    "/pets/{id}": {
+      "get": {
+        "summary": "Buscar pet por ID",
+        "description": "Busca um pet especifico utilizando seu ID.",
+        "tags": ["Pets"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "ID do pet",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "example": 1
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Pet encontrado",
+            "content": {
+              "application/json": {
+                "example": {
+                  "id": 1,
+                  "nome": "Rex",
+                  "especie": "Cachorro",
+                  "idade": 3,
+                  "adotado": false,
+                  "createdAt": "2026-10-01T14:00:00.000Z",
+                  "updatedAt": "2026-10-01T14:00:00.000Z"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "ID informado e invalido"
+          },
+          "404": {
+            "description": "Pet nao encontrado"
+          },
+          "500": {
+            "description": "Erro interno ao buscar pet"
+          }
+        }
+      },
+
+      "put": {
+        "summary": "Atualizar dados de um pet",
+        "description": "Atualiza os dados de um pet existente.",
+        "tags": ["Pets"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "ID do pet",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "example": 1
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdatePetDTO"
+              },
+              "example": {
+                "nome": "Rex Atualizado",
+                "especie": "Cachorro",
+                "idade": 4,
+                "adotado": true
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Pet atualizado com sucesso",
+            "content": {
+              "application/json": {
+                "example": {
+                  "id": 1,
+                  "nome": "Rex Atualizado",
+                  "especie": "Cachorro",
+                  "idade": 4,
+                  "adotado": true,
+                  "createdAt": "2026-10-01T14:00:00.000Z",
+                  "updatedAt": "2026-10-01T15:00:00.000Z"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "ID ou dados informados sao invalidos"
+          },
+          "404": {
+            "description": "Pet nao encontrado"
+          },
+          "500": {
+            "description": "Erro interno ao atualizar pet"
+          }
+        }
+      },
+
+      "delete": {
+        "summary": "Remover pet por ID",
+        "description": "Remove um pet cadastrado na plataforma.",
+        "tags": ["Pets"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "ID do pet",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "example": 1
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Pet removido com sucesso"
+          },
+          "400": {
+            "description": "ID informado e invalido"
+          },
+          "404": {
+            "description": "Pet nao encontrado"
+          },
+          "500": {
+            "description": "Erro interno ao excluir pet"
+          }
+        }
+      }
+    }
+  },
+
+  "components": {
+    "schemas": {
+      "Pet": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "example": 1
+          },
+          "nome": {
+            "type": "string",
+            "example": "Rex"
+          },
+          "especie": {
+            "type": "string",
+            "example": "Cachorro"
+          },
+          "idade": {
+            "type": "integer",
+            "minimum": 0,
+            "example": 3
+          },
+          "adotado": {
+            "type": "boolean",
+            "example": false
+          },
+          "createdAt": {
+            "type": "string",
+            "example": "2026-10-01T14:00:00.000Z"
+          },
+          "updatedAt": {
+            "type": "string",
+            "example": "2026-10-01T14:00:00.000Z"
+          }
+        }
+      },
+
+      "CreatePetDTO": {
+        "type": "object",
+        "required": ["nome", "especie", "idade"],
+        "properties": {
+          "nome": {
+            "type": "string",
+            "example": "Rex"
+          },
+          "especie": {
+            "type": "string",
+            "example": "Cachorro"
+          },
+          "idade": {
+            "type": "integer",
+            "minimum": 0,
+            "example": 3
+          },
+          "adotado": {
+            "type": "boolean",
+            "example": false
+          }
+        }
+      },
+
+      "UpdatePetDTO": {
+        "type": "object",
+        "properties": {
+          "nome": {
+            "type": "string",
+            "example": "Rex Atualizado"
+          },
+          "especie": {
+            "type": "string",
+            "example": "Cachorro"
+          },
+          "idade": {
+            "type": "integer",
+            "minimum": 0,
+            "example": 4
+          },
+          "adotado": {
+            "type": "boolean",
+            "example": true
+          }
+        }
+      }
+    }
+  }
+}
