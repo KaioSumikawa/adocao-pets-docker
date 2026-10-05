@@ -16,7 +16,7 @@ app.use(express.json());
 app.use('/api', appRoutes);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
-const PORT = Number(process.env.PORT) || 3000;
+const PORT = Number(process.env.PORT) || 3001;
 
 async function iniciarServidor(): Promise<void> {
   try {
