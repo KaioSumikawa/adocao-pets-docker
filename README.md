@@ -1,121 +1,142 @@
-# API de Adoção de Pets
+# Adoção de Pets — API Containerizada
 
-API RESTful desenvolvida para a disciplina **LDW — Laboratório de Desenvolvimento Web**, com o tema **Plataforma de Adoção Pet**. Permite o gerenciamento completo (CRUD) de pets disponíveis para adoção, com persistência em PostgreSQL e documentação interativa via Swagger UI.
+API REST para uma plataforma de adoção de pets, containerizada com Docker e com esteira de Integração Contínua (CI) configurada via GitHub Actions.
 
-## Tecnologias
+Projeto desenvolvido para a disciplina de **Integração e Entrega Contínua (IEC)**, reaproveitando a API construída em **Laboratório de Desenvolvimento Web (LDW)**.
 
-- **Node.js**
-- **TypeScript**
+## Stack
+
+- **Node.js 20** + **TypeScript**
 - **Express**
 - **Sequelize** (ORM)
-- **PostgreSQL**
-- **Swagger UI** (documentação interativa)
-- **CORS**
-- **dotenv**
+- **PostgreSQL 16**
+- **pnpm** (gerenciador de pacotes)
+- **Docker** + **Docker Compose**
+- **ESLint** + **Prettier**
+- **Husky** (git hooks)
+- **GitHub Actions** (CI)
 
-## Pré-requisitos
+## Estrutura do projeto
 
-Antes de rodar o projeto, é necessário ter instalado:
+```
+.
+├── .github/
+│   └── workflows/
+│       └── ci.yml             # Pipeline de CI
+├── .husky/
+│   └── pre-commit             # Hook de pre-commit
+├── src/
+│   ├── config/
+│   │   └── database.ts        # Configuração do Sequelize
+│   ├── controllers/
+│   │   └── PetController.ts   # Lógica de negócio do CRUD
+│   ├── docs/
+│   │   └── swagger.json       # Especificação OpenAPI
+│   ├── models/
+│   │   └── Pet.ts             # Model Sequelize
+│   ├── routes/
+│   │   ├── index.ts
+│   │   └── petRoutes.ts
+│   └── server.ts              # Entrada da aplicação
+├── Dockerfile
+├── docker-compose.yml
+├── eslint.config.js
+├── .prettierrc
+├── .dockerignore
+├── package.json
+├── pnpm-lock.yaml
+└── tsconfig.json
+```
 
-- [Node.js](https://nodejs.org/) (versão 18 ou superior)
-- [PostgreSQL](https://www.postgresql.org/) (versão 14 ou superior)
+## Como executar
 
-## Instalação e execução
+### Opção 1 — Docker Compose (recomendado)
 
-### 1. Clonar o repositório
+Sobe a API e o PostgreSQL simultaneamente, com volume persistente para os dados do banco.
 
 ```bash
-git clone https://github.com/KaioSumikawa/adocao-pets.git
-cd adocao-pets
+docker compose up -d --build
 ```
 
-### 2. Instalar as dependências
+A API estará disponível em:
+- **API**: http://localhost:3000/api/pets
+- **Swagger UI**: http://localhost:3000/api-docs
+
+Para visualizar os containers em execução:
 
 ```bash
-npm install
+docker compose ps
 ```
 
-### 3. Criar o banco de dados no PostgreSQL
-
-Acesse o PostgreSQL e crie o banco:
-
-```sql
-CREATE DATABASE adocao_pets;
-```
-
-Alternativamente, via linha de comando:
+Para visualizar logs:
 
 ```bash
-psql -U postgres -h localhost -p 5432 -c "CREATE DATABASE adocao_pets;"
+docker compose logs -f api
 ```
 
-### 4. Configurar as variáveis de ambiente
+Para parar (mantém os dados do banco no volume):
 
-Copie o arquivo `.env.example` para `.env`:
+```bash
+docker compose down
+```
+
+Para parar e remover também os dados do banco:
+
+```bash
+docker compose down -v
+```
+
+### Opção 2 — Execução local (sem Docker)
+
+Requer PostgreSQL instalado e rodando localmente.
+
+1. Instale as dependências:
+
+```bash
+pnpm install
+```
+
+2. Copie o arquivo de variáveis de ambiente e ajuste as credenciais:
 
 ```bash
 cp .env.example .env
 ```
 
-No Windows (Prompt de Comando):
+3. Crie o banco no PostgreSQL:
+
+```sql
+CREATE DATABASE adocao_pets;
+```
+
+4. Rode em modo desenvolvimento:
 
 ```bash
-copy .env.example .env
+pnpm dev
 ```
 
-Edite o arquivo `.env` com as credenciais do seu PostgreSQL:
+## Scripts disponíveis
 
-```env
-PORT=3000
-
-DB_HOST=localhost
-DB_PORT=5432
-DB_NAME=adocao_pets
-DB_USER=postgres
-DB_PASSWORD=sua_senha_aqui
-DB_SSL=false
-```
-
-> **Observação:** a flag `DB_SSL` deve ser `true` ao utilizar bancos em nuvem (ex: Supabase) e `false` para instâncias locais.
-
-### 5. Rodar a aplicação
-
-Modo de desenvolvimento (com recarregamento automático):
-
-```bash
-npm run dev
-```
-
-Modo de produção:
-
-```bash
-npm run build
-npm start
-```
-
-A API estará disponível em `http://localhost:3000/api`.
-
-## Documentação (Swagger UI)
-
-Após iniciar o servidor, acesse:
-
-```
-http://localhost:3000/api-docs
-```
-
-O Swagger UI permite visualizar e testar todos os endpoints diretamente pelo navegador.
+| Script | Descrição |
+|--------|-----------|
+| `pnpm dev` | Executa em modo desenvolvimento com hot reload |
+| `pnpm build` | Compila TypeScript para `dist/` |
+| `pnpm start` | Executa o build compilado |
+| `pnpm lint` | Executa ESLint em todo o projeto |
+| `pnpm format` | Formata o código com Prettier |
+| `pnpm format:check` | Verifica formatação sem alterar arquivos |
+| `pnpm typecheck` | Valida tipos com `tsc --noEmit` |
 
 ## Endpoints
 
-| Método | Rota              | Descrição                          | Sucesso |
-|--------|-------------------|------------------------------------|---------|
-| GET    | `/api/pets`       | Lista todos os pets                | 200     |
-| GET    | `/api/pets/:id`   | Busca um pet por ID                | 200     |
-| POST   | `/api/pets`       | Cadastra um novo pet               | 201     |
-| PUT    | `/api/pets/:id`   | Atualiza os dados de um pet        | 200     |
-| DELETE | `/api/pets/:id`   | Remove um pet                      | 204     |
+| Método | Rota | Descrição | Sucesso |
+|--------|------|-----------|---------|
+| GET | `/api/pets` | Lista todos os pets | 200 |
+| GET | `/api/pets/:id` | Busca um pet por ID | 200 |
+| POST | `/api/pets` | Cadastra um novo pet | 201 |
+| PUT | `/api/pets/:id` | Atualiza um pet existente | 200 |
+| DELETE | `/api/pets/:id` | Remove um pet | 204 |
 
-### Exemplo de payload (POST / PUT)
+Exemplo de payload para POST/PUT:
 
 ```json
 {
@@ -126,46 +147,39 @@ O Swagger UI permite visualizar e testar todos os endpoints diretamente pelo nav
 }
 ```
 
-## Estrutura do projeto
+## Qualidade de código
 
-```
-src/
-├── config/
-│   └── database.ts          # Configuração do Sequelize + PostgreSQL
-├── controllers/
-│   └── PetController.ts     # Lógica de negócio do CRUD de pets
-├── docs/
-│   └── swagger.json         # Especificação OpenAPI
-├── models/
-│   └── Pet.ts               # Model Sequelize tipado
-├── routes/
-│   ├── index.ts             # Agregador de rotas
-│   └── petRoutes.ts         # Rotas do recurso Pet
-└── server.ts                # Ponto de entrada da aplicação
-```
+- **ESLint**: análise estática. Configurado com `typescript-eslint` e `eslint-config-prettier`.
+- **Prettier**: formatação automática.
+- **Husky**: hook de `pre-commit` que executa `pnpm lint` e `pnpm typecheck` antes de cada commit. Commits com erro de lint ou tipo são **bloqueados localmente**.
 
-## Modelo de dados: Pet
+## Integração Contínua
 
-| Campo       | Tipo      | Obrigatório | Descrição                              |
-|-------------|-----------|-------------|----------------------------------------|
-| `id`        | INTEGER   | auto        | Identificador único (auto incremento)  |
-| `nome`      | STRING    | sim         | Nome do pet                            |
-| `especie`   | STRING    | sim         | Espécie (ex: Cachorro, Gato)           |
-| `idade`     | INTEGER   | sim         | Idade em anos                          |
-| `adotado`   | BOOLEAN   | não         | Status de adoção (padrão: `false`)     |
-| `createdAt` | TIMESTAMP | auto        | Data de criação do registro            |
-| `updatedAt` | TIMESTAMP | auto        | Data da última atualização             |
+O workflow em `.github/workflows/ci.yml` dispara automaticamente em push e pull request para a branch `main`. Executa:
 
-## Scripts disponíveis
+1. Checkout do repositório
+2. Setup do pnpm e Node.js 20
+3. Instalação das dependências
+4. Lint (`pnpm lint`)
+5. Typecheck (`pnpm typecheck`)
+6. Build (`pnpm build`)
 
-| Script          | Descrição                                          |
-|-----------------|----------------------------------------------------|
-| `npm run dev`   | Inicia em modo desenvolvimento com hot reload      |
-| `npm run build` | Compila o TypeScript para JavaScript em `dist/`    |
-| `npm start`     | Executa a versão compilada                         |
+## Variáveis de ambiente
+
+Configuradas em `.env` (desenvolvimento local) ou diretamente no `docker-compose.yml` (containers):
+
+| Variável | Descrição | Padrão |
+|----------|-----------|--------|
+| `PORT` | Porta da API | `3000` |
+| `DB_HOST` | Host do PostgreSQL | `localhost` / `db` (container) |
+| `DB_PORT` | Porta do PostgreSQL | `5432` |
+| `DB_NAME` | Nome do banco | `adocao_pets` |
+| `DB_USER` | Usuário do banco | `postgres` |
+| `DB_PASSWORD` | Senha do banco | `postgres` (container) |
+| `DB_SSL` | Habilita SSL na conexão | `false` |
 
 ## Autor
 
 **Kaio Sumikawa**
 
-Projeto desenvolvido individualmente para a disciplina **LDW — Laboratório de Desenvolvimento Web**.
+Projeto desenvolvido individualmente para a disciplina **IEC — Integração e Entrega Contínua**.
